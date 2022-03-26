@@ -11,7 +11,7 @@ end
 class Topic
   def show_name
     puts "Taroの名前を表示します"
-    # ���O�̎擾
+    # 名前の取得
     taro = Taro.new
     puts taro.name
   end
