@@ -18,3 +18,4 @@ while number != 9
   end
 
 end
+puts "終了します"
