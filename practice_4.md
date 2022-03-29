@@ -9,5 +9,13 @@
 - Action dispauch  
 ルーティングに関する機能の補助
 
+## 正解
 
-
+- Active Record  
+役割：リソース管理
+- Action View  
+役割：ユーザーインターフェース
+- Action Controller  
+役割：リソース制御
+- Action Dispatch(ルーター)  
+役割：Webリクエストの解析とルーティング
