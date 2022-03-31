@@ -405,10 +405,16 @@ app/assetsディレクトリ内にcss,javascript,画像ファイルなどが管理されている。
 
 # 4.3 railsコマンド
 
-```bash:Railsアプリケーションの生成
+Railsアプリケーションの生成
+```bash
 $ rails new アプリケーション名[オプション]
 ```
-
+Active Recordの生成をスキップ
+```bash
+$ rails new application -O
+# もしくは
+$ rails new application --skip-active-record
+```
 
 
 
