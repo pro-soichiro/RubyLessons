@@ -405,15 +405,84 @@ app/assetsディレクトリ内にcss,javascript,画像ファイルなどが管理されている。
 
 # 4.3 railsコマンド
 
-Railsアプリケーションの生成
+### Rails new
+Rails アプリケーションの生成
 ```bash
 $ rails new アプリケーション名[オプション]
 ```
+
 Active Recordの生成をスキップ
 ```bash
 $ rails new application -O
 # もしくは
 $ rails new application --skip-active-record
+```
+
+使用データベースを指定する時
+```bash
+$ rails new application -database=mysql
+```
+デフォルトではSQLite3が使用される。  
+  
+dオプションで使用できるデータベースの種類を確認したい時
+```
+$ rails new -h
+```
+実行結果
+```bash
+-d, [--database=DATABASE]  
+# Preconfigure for selected database (options: mysql/postgresql/sqlite3/oracle/frontbase/ibm_db/sqlserver/jdbcmysql/jdbcsqlite3/jdbcpostgresql/jdbc)
+```
+
+テスト関連ツールのフレームセットを生成したくない時
+```bash
+$ rails new application -T
+# もしくは
+$ rails new application --skip-test-uni
+```
+
+bundle installをさせたくない時
+```bash
+$ rails new application -B
+# もしくは
+$ rails new application --skip-bundle
+```
+
+concernsやimagesなどの空ディレクトリを生成したくないとき
+```bash
+$ rails new application --skip-keeps
+```
+
+APIを作るためのオプション  
+ビューに関連した機能の生成を行わなず、軽量なフレームワークを作成する。
+```bash
+$ rails new application --api
+```
+
+### rails g(Railsアプリケーション要素の生成)
+
+基本
+```bash
+$ rails g ジェネレーター種類 引数 [オプション]
+```
+
+コントローラーを生成する  
+コントローラー名は小文字複数形(例：books)がルール
+```bash
+$ rails g controller コントローラー名
+```
+
+アクション名を指定し、対応するルートをルーターに追加し、viewのスケルトンを生成して欲しいとき
+```bash
+$ rails g controller コントローラー名 アクション名
+```
+
+モデルの生成とマイグレーションファイルをdb/migrateディレクトリに生成する時に使用  
+モデル名は大文字から始まる単数形がルール
+```bash
+$ rails g models モデル名 属性名:タイプ
+# Bookモデルにstringタイプでタイトル(title)とtextタイプで感想(thoughts)を保存させたい場合
+$ rails g models Book title:string thoughts:text
 ```
 
 
