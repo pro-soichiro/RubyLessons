@@ -403,7 +403,11 @@ app/assetsディレクトリ内にcss,javascript,画像ファイルなどが管理されている。
 - 正解  
 正解
 
+# 4.3 railsコマンド
 
+```bash:Railsアプリケーションの生成
+$ rails new アプリケーション名[オプション]
+```
 
 
 
