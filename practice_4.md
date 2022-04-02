@@ -1,4 +1,4 @@
-B# 4-1  RailsコンポーネントとMVCの基礎知識
+　B# 4-1  RailsコンポーネントとMVCの基礎知識
 ## 1 MVCの役割を構成する、Railsの各コンポーネントの名前を列挙し、それぞれの役割を説明したください。
 
 - Active Record  
@@ -497,5 +497,23 @@ $ rails g mailer メーラー名 メソッド名
 $ rails g migration マイグレーション名 カラム属性:タイプ
 ```
 
-scaffoldにより、モデル
+scaffoldにより、モデルとマイグレーションファイル、  
+基本的な7つのアクション(index,new,create,show,edit,destroy,update).  
+それに伴うルートの定義とそれぞれのアクションで必要であればビューの作成を一気に行える。
+  
+```bash
+$ rails g scaffold モデル名 属性名:タイプ
+# となる
+$ rails g scaffold Book title:string text:text
+```
 
+基本的な7つのアクションとビューは作成しないが、それ以外はScaffoldと同様　　
+モデルとマイグレーションファイル、コントローラーとルーティングの定義を行う。
+```bash
+$ rails g resource モデル名 属性名:タイプ
+```
+  
+独自のRakeタスクを作成したい場合に使用するジェネレーター
+```bash
+$ rails g task Rakeタスク名
+```
