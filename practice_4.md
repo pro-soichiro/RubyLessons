@@ -594,4 +594,47 @@ Stringクラスなどと同じ
 > Book.methods
 ```
 
+# 4.5 Rakeタスクコマンド
+Rakeタスクコマンドとは、マイグレーションやテストなどのRailsアプリケーションに関わる、様々なタスクの実行をするコマンドのこと。
+
+## 主なタスクコマンド
+### rails stats
+コード統計  
+コントローラーの総行数、メソッドの数などが表示される
+### rails routes
+ルート一覧
+### rails notes
+ノート情報  
+コード内に決まった形でコメントを残すとそのコメントだけnotesコマンドで表示してくれる。  
+- TODO やるべきこと
+```Ruby
+# TODO: 追加が必要です。
+```
+- FIXME 修正
+```Ruby
+# FIXME: 修正箇所(・・・)
+```
+- OPTIMIZE 最適化
+```Ruby
+# OPTIMIZE: 最適化したい内容(・・・)
+```
+
+### rails about
+Rails関連の情報表示
+### rails log:clear
+ログのクリア
+### rails db:migrate
+マイグレーションの実行
+### rails db:seed
+初期データの登録
+### rails db:setup
+スキーマからテーブルを作成し、seedを実行
+### rails db:drop
+データベースを削除
+### rails db:reset
+drop,setupを一連で行うコマンド
+### rails test
+標準テストの実施
+### rails db:fixtures:load
+テストデータのロード
 
