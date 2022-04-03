@@ -517,3 +517,57 @@ $ rails g resource モデル名 属性名:タイプ
 ```bash
 $ rails g task Rakeタスク名
 ```
+
+### rails destroy : generatorコマンドの取り消し
+
+```bash
+$ rails d ジェネレーター種類
+# 作成したbookコントローラーをbooksで作り直したい時
+$ rails d controller book
+$ rails g controller books
+```
+
+### rails アプリケーションの起動・運用
+
+Puma(Railsサーバー)を立ち上げて、アプリケーションを実行したい時
+```bash
+$ rails s
+# もしくは
+$ rails server
+```
+
+Railsサーバーは立ち上げずに、対話的にRailsアプリケーションの実装を確認したい時
+```bash
+$ rails c
+# もしくは
+$ rails console
+```
+
+rails cにおいてコマンド終了時にデータベースに対する更新処理をロールバックする（戻す）ことができる
+```bash
+$ rails console --sandbox
+# もしくは
+$ rails c -s
+```
+
+実装されているデータベースのコマンドラインツールを起動する時
+```bash
+$ rails db
+# もしくは
+$ rails dbconsole
+```
+
+webアプリケーションの外から、Railsアプリケーションの環境上で動くバッチ処理を実行したい場合
+  
+例えば、UNIX上ではcronコマンドを使用して、定期的なバッチ処理を実行することができる。
+  
+Sweeperクラスオブジェクトとして作成したバッチジョブのクラスメソッドstartを実行する例。
+```bash
+$ rails runner Sweeper.start
+```
+
+# Railsコンソールを使用したRubyの実行
+
+
+
+
