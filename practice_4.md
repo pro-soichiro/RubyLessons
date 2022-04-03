@@ -566,8 +566,32 @@ Sweeperクラスオブジェクトとして作成したバッチジョブのク�
 $ rails runner Sweeper.start
 ```
 
-# Railsコンソールを使用したRubyの実行
+# 4.4 Railsコンソールを使用したRubyの実行
 
+### 親クラスの確認方法
+Bookモデルの親クラスを確認する例
+```bash
+> Book.superclass
+ => ApplicationRecord(abstract) 
+```
+ApplicationRecord(abstract)の親クラスを確認する
+```bash
+> Book.superclass.superclass
+ => ActiveRecord::Base 
+```
+ActiveRecord::Base の親クラスを確認する
+```bash
+> ActiveRecord::Base.superclass
+ => Object
+```
+  
+つまり、ActiveRecordはRubyのObjectクラスを継承して作成されている。  
+Stringクラスなどと同じ
 
+### methodsメソッド
+メソッドを確認したい時
+```bash
+> Book.methods
+```
 
 
