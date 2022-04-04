@@ -495,12 +495,205 @@ User.delete(1)
 #### delete_all
 全てのデータをインスタンス化せずに直接削除する
 
+#### クラスメソッドとインスタンスメソッドの違い
+Bookモデルがある場合の挙動
+クラスメソッドはBookモデルのデータ全体に対するメソッドであるため、全てのデータ（インスタンス）に影響がある。
+インスタンスメソッドはデータ1件（例えばid:1のもののみ）にしか影響されないということ。
 
+| メソッド | クラスメソッド | インスタンスメソッド |
+| ---- | ---- | ---- |
+| save | X | O |
+| create | O | X |
+| update | O | O |
+| destroy | O | O |
+| delete | O | O |
+| update_all | O | X |
+| destroy_all | O | X |
+| delete_all | O | X |
 
+create/save/updateメソッドは、テーブル操作前にバリデーションを実装できる。  
+バリデーション に失敗した場合はロールバックを行い、createはインスタンスを、save/updateはfalseを返す。  
+この際、ActiveRecord::RecordInvalid例外エラーを発生させたい時は、!をメソッド名の後ろにつける。  
+create!/save!/update!
 
+### 5.4.7 条件による読み出しメソッド(where)
+seeds.rb
+```ruby
+User.create(name:"山田太郎",address:"東京都港区", email:"ta@abc.jp")
+User.create(name:"田中花子",address:"東京都港区", email:"hk@abc.jp")
+User.create(name:"山崎隆文",address:"東京都品川区", email:"tn@abc.jp")
+User.create(name:"佐々一郎",address:"東京都品川区", email:"ic@abc.jp")
+User.create(name:"大友裕子",address:"東京都港区", email:"to@abc.jp")
+User.create(name:"山田太郎",address:"北海道札幌市", email:"yt@abc.jp")
+```
 
+#### 属性値の列where条件を指定する方法
+```ruby
+モデル名.where(属性名: "条件の値")
+# name属性が「山田太郎」と一致するもの
+# そのレコードの数
+users = User.where(name: "山田太郎")
+users.count #=> 1
 
+# addressが東京都港区のものと東京都品川区のもの
+users = User.where(address: ["東京都港区","東京都品川区"])
+users.count #=> 5
 
+# 上記の条件に追加して、名前が山田太郎であるもの
+users = User.where(address: ["東京都港区","東京都品川区"],name:"山田太郎")
+users.count #=> 1
+
+# addressが東京都港区か北海道札幌市であり、名前が山田太郎であるもの
+users = User.where(address: ["東京都港区","北海道札幌市"],name:"山田太郎")
+users.count #=> 2
+```
+
+#### where条件を条件式で指定する方法
+nameが山田太郎であり、birthdayが1975-02-02より後のものを条件にした例
+
+- 直接指定：条件の値を文字列で直接指定する方式  
+  SQLインジェクションという攻撃の対象になるので推奨しない。  
+  ```ruby
+  User.where('name = "山田太郎" and birthday > "1975-02-02"')
+  ```
+
+- 配列指定：条件を「?」で指定して、配列のように?の順に値を指定する方式  
+  プレースホルダー形式ともいう。  
+  ```ruby
+  User.where("name = ? and birthday > ?","山田太郎","1975-02-1")
+  ```
+
+- ハッシュ指定（名前つきプレースホルダー形式）：条件をシンボルキーで指定して、ハッシュ脳ようにシンボルに対する値を指定する方式  
+  ```ruby
+  User.where("name = :k1 and birthday > :k2", k1:"山田太郎",k2:"1975-02-1")
+  ```
+
+#### あいまい検索
+where条件を条件式で指定する方法が使えれば、あいまい検索が可能となる。  
+これまで=だった部分をlikeに変え、値の指定を%を使って表す。  
+
+例：nameに「田」が入っているUserモデルの取得  
+配列指定で記述
+```ruby
+users = User.where("name like ?","%田%")
+```
+例：birthdayが1975年のUserモデル
+```ruby
+users = User.where("birthday like ?","1975%")
+```
+
+#### where条件の否定の仕方
+whereの条件と逆のデータ  
+モデル.where.not(条件)  
+例：addressに東京が含むUserモデルと含まないUserモデル
+```ruby
+# Userモデルの全件数取得
+User.all.count #=> 6
+# 含む
+include = User.where("address like ?","東京%")
+include.count #=> 5
+# 含まない
+not_include = User.where.not("address like ?","東京%")
+not_include.count #=> 1
+```
+ただし、検索対象の属性の値がnilの場合除外される。
+
+### 5.4.8 インスタンス配列の取得を支援するメソッド
+- select(対象属性)  
+テーブルの列単位（属性列）で取得する。  
+例：Userモデルの、名前と誕生日のみのインスタンス配列を取得する場合
+```ruby
+User.select(:name,:birthday)
+```
+例：distinctで重複する名前を一つにする場合
+```ruby
+User.select(:name).distinct
+```
+
+- limit/offset  
+limitは取得データの数を指定できる。  
+offsetは取得データの開始位置を指定できる。  
+例：4件目から8件目まで取得する場合  
+配列と同じで0スタート  
+```ruby
+User.offset(3).limit(5)
+```
+
+- order  
+指定された属性の値に従って並び替える。  
+昇順(asc)/降順(desc)を指定できる。  
+デフォルトは昇順  
+例：名前を昇順、年齢を降順に名前・年齢順のユーザーを取得する場合
+```ruby
+User.order(:name, age: :desc)
+```
+
+- group  
+指定された属性でグループ化する。  
+例：addressでグループ化し、グループごとのデータ数を取得する場合
+```ruby
+User.group(:address).count
+ #=> {"北海道札幌市"=>1, "東京都品川区"=>2, "東京都港区"=>3}
+```
+QuizTemplateAppにおいて、カテゴリー別に正答率を計算させることも可能だった。
+CorrectAnswerRate.group(:category_id).count
+
+- having  
+groupメソッドにたいす条件として指定できる。
+
+- unscope/only  
+unscopeは上位メソッドのうち指定したものを取り除く  
+onlyは上位メソッドのうち指定したもののみを有効にする  
+
+etc...etc....
+
+#### メソッドチェーン
+これまでのメソッドはインスタンス配列を返すため、「.」でメソッドをつなげて記述することができる。  
+こういった相互に連結したメソッドをメソッドチェーンという。
+
+### 5.4.9 そのほか便利なメソッド
+- pluck  
+mapを使った記述を簡単にするpluckメソッド  
+例：Userモデルの名前とメールアドレスだけの配列を取得する場合
+```ruby
+User.pluck(:name,:email)
+```
+- ids  
+pluck(:id)と同じ意味を持つidsメソッド
+
+- count  
+引数に属性値を指定するとnilも取得してくれる。
+
+- sum  
+合計
+
+- average  
+平均値  
+例：Productモデルについて、priceの平均値を浮動小数点数で取得する場合
+```ruby
+Product.average(:price).to_f
+```
+
+### 練習問題 5.4
+1. CRUD操作とは何かを、データリソースとの漢検を使って説明してください。
+  - 解答
+
+  - 正解
+
+2. CRUD操作を実現する代表的なメソッドについて、一つのモデルを例に具体的な使い方を説明してください。
+  - 解答
+
+  - 正解
+
+3. save,create,updateのメソッドについて、役割、および関係をメソッドの対象となるオブジェクトの種類も含めて説明してください。
+  - 解答
+
+  - 正解
+
+4. selectメソッドとfind_byメソッドの違い、およびselectとpluckメソッドの違いを具体的に説明してください。
+  - 解答
+
+  - 正解
 
 
 ## 5.5 まとめ
