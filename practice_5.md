@@ -730,5 +730,16 @@ Product.average(:price).to_f
     selectはテーブルの属性列で取得する。`User.select(:name)`とすると名前のみ取得することとなる。  
     他は正解。
 
+#### selectとpluckの返り値の違い
+```bash
+2.6.3 :002 > User.select(:name)
+  User Load (0.1ms)  SELECT  "users"."name" FROM "users" LIMIT ?  [["LIMIT", 11]]
+ => #<ActiveRecord::Relation [#<User id: nil, name: "山田太郎">, #<User id: nil, name: "田中花子">, #<User id: nil, name: "山崎隆文">, #<User id: nil, name: "佐々一郎">, #<User id: nil, name: "大友裕子">, #<User id: nil, name: "山田太郎">]> 
+
+2.6.3 :003 > User.pluck(:name)
+   (0.2ms)  SELECT "users"."name" FROM "users"
+ => ["山田太郎", "田中花子", "山崎隆文", "佐々一郎", "大友裕子", "山田太郎"] 
+
+```
 
 ## 5.5 まとめ
