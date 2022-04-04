@@ -118,5 +118,227 @@ $ rails g user name:string number:integer:index
     だいたい正解
 
 ## 5.3 マイグレーションとシード機能
+### 5.3.2 マイグレーションのコマンドと操作
+未反映のマイグレーションファイルを元に、データベースおよびschema.rbを更新する。
+```bash
+$ rails db:migrate
+```
+
+現在の（実行済みの）マイグレーションのバージョンを表示
+```bash
+$ rails db:version
+```
+
+マイグレーションの実行状況を一覧表示する。
+```bash
+$ rails db:migrate:status
+```
+
+データベースやスキーマを削除し、再実行する
+```bash
+$ rails db:migrate:reset
+```
+
+db:create db:schema:load db:seedを一括で行う
+```bash
+$ rails db:setup
+```
+
+db:drop db:setupを一括で行う
+```bash
+$ rails db:reset
+```
+
+マイグレーションを一つ前に戻す  
+データを含む場合は削除される
+```bash
+$ rails db:rollback
+```
+
+マイグレーションを指定の数だけ戻す  
+戻したテーブルは再構成されるため初期状態になる。
+```bash
+$ rails db:rollback STEP=3
+```
+
+現在のスキーマファイルからデータベースを作成する
+```bash
+$ rails db:schema:load
+```
+
+現在のデータベースからスキーマを作成する
+```bash
+$ rails db:schema:dump
+```
+
+現在のデータベースを全て削除する
+```bash
+$ rails db:drop
+```
+
+マイグレーションの一つ前のバージョンへの戻しを実行し、ステータスを確認する。
+```bash
+# ステータスの確認（実行状況）
+$ rails db:migrate:status
+# ロールバック
+$ rails db:rollback
+```
+
+### 5.3.3 マイグレーション名の付け方
+モデルに必要になった属性（カラム）を存在するテーブルに追加する際にマイグレーションファイルを作成する必要がある。
+
+- テーブルを新規に作成する：create_テーブル名
+- 既存テーブルに新しいカラムを追加する：add_カラム名_to_テーブル名
+- 既存テーブルからカラムを削除する：remove_カラム名_from_テーブル名
+- 多対多の関係の仲介テーブル「habtm(has_belongs_to_many)用のテーブル」を作成する：create_join_table_モデル名_モデル名
+
+#### 新規にテーブルを作成するパターン
+一般的にはモデルの生成での自動作成を行う。
+例としてFoodモデルにnameカラムをstring型で作成する
+```bash
+$ rails g model food name:string
+```
+
+#### 既存のテーブルにカラムを追加するパターン
+上記のFoodモデルにdescriptionというカラムをstring型で追加する
+```bash
+$ rails g migration add_description_to_foods description:string
+```
+
+#### 既存のテーブルのカラム属性を変更するパターン
+descriptionカラムをstring型からtext型へ変更する
+```bash
+$ rails g migration change_datatype_description_of_foods
+```
+上記のコマンドによって下記のようなファイルが生成される
+```ruby
+class ChangeDatatypeDescriptionOfFoods < ActiveRecord::Migration[5.2]
+  def change
+  end
+end
+```
+処理内容はchange_columnメソッドを使用して記述する  
+下記のコードは、foodsテーブルのdescriptionの属性タイプをtextとし、初期値として"食事の内容を記述"を設定する処理
+```ruby
+class ChangeDatatypeDescriptionOfFoods < ActiveRecord::Migration[5.2]
+  def change
+    change_column :foods, :description, :text, default:"食事の内容を記述"
+  end
+end
+```
+
+#### 既存のテーブルのカラムを差し替えるパターン
+上記の方法とは異なる、汎用的なやり方としては、"古いカラムを削除して、新しいカラムを追加する"という方法
+その方法で作成した場合  
+- コマンド
+```bash
+$ rails g migration change_attributes_of_foods
+```
+- マイグレーションファイル
+```ruby
+class ChangeAttributesOfFoods < ActiveRecord::Migration[5.2]
+  # 追加
+  def up
+    change_table :foods do |t|
+      t.change :name, :string, default: "食事の名前"
+    end
+  end
+  
+  # 削除
+  def down
+    change_table :foods do |t|
+      t.change :name, :string
+    end
+  end
+end
+```
+また、reversibleを使って下記のように書くことも可能
+```ruby
+class ChangeAttributesOfFoods < ActiveRecord::Migration[5.2]
+  def change
+    reversible do |dir|
+      change_table :foods do |t|
+        # 追加
+        dir.up { t.change :name, :string, default: "食事の名前" }
+        # 削除
+        dir.down { t.change :name, :string }
+      end
+    end
+  end
+end
+```
+
+#### 既存のカラム属性をインデックスにするパターン
+Userモデルが持つemailカラムを検索処理に使用する場合。
+- コマンド
+```bash
+$ rails g migration add_index_email_to_users
+```
+- マイグレーションファイル
+```ruby
+class AddIndexEmailToUsers < ActiveRecord::Migration[5.2]
+  def change
+    add_index :users, :email, unique: true
+  end
+end
+```
+
+### 5.3.7 シード機能
+あらかじめテーブルに入れておきたいリソースを登録しておくことができる。  
+```bash
+$ rails db:seed
+```
+このコマンドは既に登録されているデータを考慮しないため、  
+繰り返し実行すると、データ関係に矛盾が発生しない限り、  
+同じものが繰り返し登録されていく。
+データの追加ではなく、データベースを再作成したい場合は、「rails db:setup」を使用する。
+これはテーブルの初期化と、seed再実行を一括して行ってくれる。
+
+#### シードの実装例
+モデルのcreateメソッドを使用する。newとsaveを一括してくれる。
+```ruby
+Food.create(name:"ラーメン", description: "中国から伝わった麺が日本流に様々にアレンジされています")
+Food.create(name:"寿司", description: "日本独特の食文化を作り出しています")
+```
+- 実行コマンド
+```bash
+$ rails db:seed
+```
+#### 練習問題 5.3
+1. マイグレーションの目的について説明してください。
+  - 解答
+
+  - 正解
+  
+2. マイグレーションファイルを作成する方法を2つ挙げてください。
+  - 解答
+
+  - 正解
+  
+3. 一度マイグレーションを行って作成したデータベースを全て取り消し、作り直す手順を、具体的に説明してください。  
+   また、その操作をLibraryアプリケーションに対して、実際に行ってみてください。
+  - 解答
+
+  - 正解
+  
+4. マイグレーションの結果が正しくなかった場合に、最新のマイグレーションとテーブルの内容を取り消す方法を具体的に説明してください。
+  - 解答
+
+  - 正解
+  
+5. マイグレーションファイルのファイル名について、最低限必要なルールを説明してください。
+  - 解答
+
+  - 正解
+  
+6. スキーマの役割とマイグレーションとの関係について説明してください。  
+   また、スキーマの生成場所について説明してください。
+  - 解答
+
+  - 正解
+  
+
+
+
 ## 5.4 CRUD操作と標準装備のメソッド
 ## 5.5 まとめ
