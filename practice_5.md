@@ -113,7 +113,9 @@ $ rails g user name:string number:integer:index
       更新日時をdate型で記録する属性
 
   - 正解
-
+    - 主キーはid
+    - 登録日と更新日はtimestamps型
+    だいたい正解
 
 ## 5.3 マイグレーションとシード機能
 ## 5.4 CRUD操作と標準装備のメソッド
