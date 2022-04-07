@@ -124,14 +124,33 @@ end
   - 解答
     コールバックとは、データリソースのライフサイクルのタイミングにおいて、あらかじめ決めておくことで発生させるメソッド
   - 正解
-  
+    モデルオブジェクトのライフサイクルの検証・作成・保存・更新・削除のイベントタイミングで、あらかじめ用意した特定の処理を呼び出し、実行させる機能。
+
 2. コールバックの種類と、それぞれの実行の優先順位について説明してください。
   - 解答
     コールバックの種類は、バリデーションのタイミングで起こるものとsave,update,destroy,createの前後もしくは両方で起こすものがある。
-    
-  - 正解
-  
 
+  - 正解
+    validation
+    - before_validation 実行前
+    - after_validation 実行後
+    xxxメソッド(save/update/create/destroy)
+    - before_xxx 実行前
+    - around_xxx 実行前後
+    - after_xxx 実行後
+
+    バリデーション=> save => around save => create => around cerate => データの処理
+    saveとaround saveではsaveの方が優先順位が高い
+    saveとcreateではsaveの方が優先順位が高い
+
+    validate => save => around save => update => around update
+    saveとupdateではsaveの方が優先順位が高い  
+
+    その他のコールバック  
+    - after_initialize/after_find インスタンス化/取得
+    - after_touch
+    - after_create_commit/after_update_commit/after_destroy_commit コミット終了時
+    - after_rollback エラー発生時ロールバック後
 
 ## スコープ
 ## ロック機能
