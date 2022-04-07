@@ -153,4 +153,94 @@ end
     - after_rollback エラー発生時ロールバック後
 
 ## スコープ
+### スコープとは？
+モデルのデータリソースの検索に便利な機能。
+### 何ができるのか？
+モデルに対して、よく利用する検索条件をあらかじめ用意し、それをメソッドとして簡単に利用できる
+### 例えば？
+Userモデルに身長がheight属性で定義されており、170cm以上のUserのみインスタンス化したい場合。
+```ruby
+User.where("height >= ?", "170")
+
+# これをscopeを使ってメソッドにすると
+# モデルで定義
+scope :target_area, -> { where("height >= ?","170") }
+
+# コントローラーなどで
+User.target_area
+#=> 上記の条件に従ってデータが取得される。
+```
+### どこに実装するか？
+scopeメソッドを使用して、対象のモデルクラスに実装する
+### スコープの種類
+引数ありと引数なしの二通り。
+```ruby
+class モデル名 < ApplicationRecord
+  # 引数なし
+  scope :メソッド名, -> { 検索条件 }
+  # 引数あり
+  scope :メソッド名, ->(引数) { 検索条件 }
+end
+```
+引数ありにすることで多態的な機能を実装できる。  
+具体的には、  
+Userモデルに身長がheight属性で定義されており、170cm以上のUserのみインスタンス化したい場合。  
+を  
+Userモデルに身長がheight属性で定義されており、Xcm以上のUserのみインスタンス化したい場合。  
+と言うふうに都度カスタム可能  
+下記コードが引数ありのscope  
+```ruby
+class User < ApplicationRecord
+  scope :target_area, ->(x) { where("height >= ?",x) }
+end
+
+# コントローラーなどで
+User.target_area(170) # 170以上
+User.target_area(100) # 100以上
+```
+
+### スコープの組み合わせ
+メソッドチェーンとして結合することで、複数の条件検索も可能。  
+例：Userで性別がmanで身長が170cm以上で年齢が25歳以上の人  
+```ruby
+class User < ApplicationRecord
+  scope :target_gender, ->(gender_arg) { where(gender: gender_arg ) }
+  scope :target_height, ->(height_arg) { where("height >= ?",height_arg) }
+  scope :target_age, ->(age_arg) { where("age >= ?",age_arg) }
+end
+
+# コントローラーなどで
+User.target_gender("man").target_height(170).target_age(25)
+```
+
+### デフォルトスコープ
+上記の例を続けて、未成年はallで呼び出せないようにする。
+```ruby
+class User < ApplicationRecord
+  default_scope { where("age < 20") }
+end
+
+# コントローラーなどでデフォルトスコープで呼び出す
+User.all
+# デフォルトスコープを一時的に無視して全て呼び出したい時
+User.unscoped.all
+```
+デフォルトスコープは他のスコープより先に評価される。
+
+### 練習問題 6.3
+1. スコープの役割と設定場所について説明してください。
+  - 解答
+  
+  - 正解
+
+2. 複数のスコープを組み合わせる方法について説明してください。
+  - 解答
+  
+  - 正解
+  
+3. デフォルトスコープがどのような場合に有効化、例をあげて説明してください。また、デフォルトスコープを無視する検索方法を説明してください。
+  - 解答
+  
+  - 正解
+
 ## ロック機能
