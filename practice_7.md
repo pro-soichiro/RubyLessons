@@ -111,6 +111,103 @@ QuizTemplateAppでいうQuestionモデルとStaffモデルの関係
     これ以降はhmtと同じことができなかった。  
     hmt型を基本的に使うようにする。
 
+  ### アソシエーションメソッドのオプション
+
+  - class_name  
+    アソシエーションのメソッド名をモデルと異なる名前で利用したい場合に、実際のモデル名を対応つけるオプション。
+  - dependent  
+    親子関係のあるモデルで、親モデルのデータリソースを削除する場合、それと紐つく子モデルのデータリソースをどう扱うかを指定する。  
+    親を削除すると紐付く子も削除される。  
+    ```ruby
+    has_many :rentals, dependent: :destroy
+    ```
+    - :destroy  
+      子のデータリソースがある場合にこのデータリソースも同時に削除される。
+    - :restrict_with_error  
+      子のデータリソースがある場合に親のインスタンスにエラーを通知する。
+    - :restrict_with_exception  
+      子のデータリソースがある場合に例外エラーを発生する。
+
+  - foreign_key  
+    子モデルに設定する親モデルの外部キー名を、指定のものにしたい時。（デフォルトは「親モデル名_id」）  
+    例：子モデルHobbyの外部キーをperson_idとして設定する  
+    has_many :hobbies, foreign_key: "person_id"  
+
+  - autosave  
+    親モデルのアソシエーションメソッド（has_many）に対してautosaveをtrueにすることで、親インスタンスを保存した時、その時点で紐づいている新規の子インスタンスも全て保存される。
+
+  > ビューの章で扱う`accepts_nested_attributes_for`を使用する場合、親モデルのautosaveオプションはtrueになっている必要がある。
+
+  - validate  
+  アソシエーション設定している親子モデルにおいて、バリデーションも併せて実行するか、しないかを設定する。   
+  trueの場合、関係モデルのインスタンスも合わせてバリデーション を実行し、falseの場合は、関係モデルのインスタンスは無視する。
+
+  ### 7.1.5 単一テーブル継承(STI)などのモデルの応用関係
+  #### 何ができるか？
+  単一テーブル継承を利用すると、同じような情報を持つ目的別の複数モデルを1つのテーブルだけで対応させることができる。
+  #### 例
+  ペットを管理するペットモデルとそれを継承する犬と猫モデルがある時、データベースのテーブルはPetモデルにだけ紐ついており、dog,catそれぞれはpetsテーブルの中で管理される。
+  #### 具体的な使用例
+  1. 異なるユーザー種類を管理する場合
+  2. 異なる種類のコードや情報を同じ形式で管理したい場合
+
+  - ポリモーフィックな関係  
+  共通のbelongs_toメソッドを使用して複数の親モデルに関係つけること  
+  親モデル名_idの追加の必要性をなくす仕組み  
+  ```bash
+  $ rails g model picture imageable:references{polymorphic} path_name:string
+  ```
+  親モデルでは`has_many :pictures, as: :imageable`と記載する
+
+  ### 7.1.6 モデル結合を利用したインスタンス配列の取得
+  #### モデル結合とは？
+  関係する複数モデルのデータリソースを、まるで一つのモデルデータリソースのように取り扱う方法のこと。
+  #### メリット
+  複数のデータリソースに対応するそれぞれのテーブルをまとめて一つの一時的な仮想テーブルにすることで、検索処理などを効果的に行うことができる。
+
+  #### 左外部結合(left outer join)
+  結合メソッドを呼び出したインスタンスのテーブルのデータを基準にして、相手側のテーブルの外部キーidで紐つくデータのみ結合する方法
+
+  #### 内部結合(inner join)
+  お互いに内部キーで紐つくidの一致するデータリソースだけを結合する方法
+
+  #### 左外部結合と内部結合の違い
+  左外部結合はnilもレコードが作られるが、内部結合はidが一致したもののみレコードが作成される。
+
+  #### N+1問題
+  テーブルに対するn件のデータ検索を行う場合に、n+1件のSQL検索命令が発行されることにより、処理速度が大幅に悪化する状況を指す。
+
+  #### includesメソッド
+  何もせずに、記述する場合
+  ```ruby
+  2.6.3 :029 > Rental.all.each { |d| puts d.book.title }
+
+    Rental Load (0.1ms)  SELECT "rentals".* FROM "rentals"
+    Book Load (0.1ms)  SELECT  "books".* FROM "books" WHERE "books"."id" = ? LIMIT ?  [["id", 5], ["LIMIT", 1]]
+    Railsの夜明け
+    Book Load (0.1ms)  SELECT  "books".* FROM "books" WHERE "books"."id" = ? LIMIT ?  [["id", 6], ["LIMIT", 1]]
+    小説Rubyの冒険
+    Book Load (0.1ms)  SELECT  "books".* FROM "books" WHERE "books"."id" = ? LIMIT ?  [["id", 1], ["LIMIT", 1]]
+    タイトル
+  => [#<Rental id: 1, user_id: 26, book_id: 5, rental_date: nil, created_at: "2022-04-08 13:27:12", updated_at: "2022-04-08 13:27:12">,
+      #<Rental id: 2, user_id: 26, book_id: 6, rental_date: nil, created_at: "2022-04-08 13:29:26", updated_at: "2022-04-08 13:29:26">,
+      #<Rental id: 3, user_id: 15, book_id: 1, rental_date: "2022-04-11", created_at: "2022-04-11 09:35:53", updated_at: "2022-04-11 09:37:23">]
+  ```
+  includesメソッドを使用し、N+1問題の対策をした場合
+  ```ruby
+  2.6.3 :030 > Rental.includes(:book).all.each { |d| puts d.book.title }
+
+    Rental Load (0.1ms)  SELECT "rentals".* FROM "rentals"
+    Book Load (0.2ms)  SELECT "books".* FROM "books" WHERE "books"."id" IN (?, ?, ?)  [["id", 5], ["id", 6], ["id", 1]]
+    Railsの夜明け
+    小説Rubyの冒険
+    タイトル
+  => [#<Rental id: 1, user_id: 26, book_id: 5, rental_date: nil, created_at: "2022-04-08 13:27:12", updated_at: "2022-04-08 13:27:12">,
+      #<Rental id: 2, user_id: 26, book_id: 6, rental_date: nil, created_at: "2022-04-08 13:29:26", updated_at: "2022-04-08 13:29:26">,
+      #<Rental id: 3, user_id: 15, book_id: 1, rental_date: "2022-04-11", created_at: "2022-04-11 09:35:53", updated_at: "2022-04-11 09:37:23">]
+  ```
+
+
 
 
 ## 7.2 仮想的な属性（attributes API）
