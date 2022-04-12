@@ -229,26 +229,31 @@ http://localhost:4000/books?authcode=22&pubcode=5
 ### 練習問題 8.2
 1.ルートにおいて、HTTPメソッドとURIはどのような役割をするのか説明してください。
   - 解答
-  
+    URIが要求宛先、HTTPメソッドが要求目的
   - 正解
 
 4.Reservationアプリケーションで、`rails routes`コマンドを実行した時に表示されるルートの中で  
-「POST/rooms(.:format)rooms#create」に該当するルーティングヘルパーを説明してください。
+「POST /rooms(.:format) rooms#create」に該当するルーティングヘルパーを説明してください。
   - 解答
-  
+  Prefixはroomsであり  
+  Pathヘルパーは rooms_path(:id)  
+  URLヘルパーは rooms_url(:id)  
   - 正解
 
 5.Reservationアプリケーションで、
 ```bash
+  # 1
   rooms GET /rooms(.:format) rooms#index
-  # と
+  # 2
   room GET/rooms/:id(.:format) rooms#show
 ```
 という2つのルートのルーティングヘルパーの使い方および違いを、  
 パラメーターの指定の仕方を含めて説明してください。  
 ただし、formatパラメーターについては無視してかまいません。
   - 解答
-  
+  違いはprefix名が違うことと、パラメーターの有無です。
+  1はパラメーターを持たず、rooms_pathもしくはrooms_urlでヘルパーを使用する。  
+  2はパラメーターを持ち、room_path(:id)もしくはroom_url(:id)でヘルパーを使用する。
   - 正解
 
 
