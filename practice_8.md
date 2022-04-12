@@ -231,6 +231,7 @@ http://localhost:4000/books?authcode=22&pubcode=5
   - 解答
     URIが要求宛先、HTTPメソッドが要求目的
   - 正解
+    正解。付け加えるなら、HTTPメソッドとURIパターンの組み合わせが、to:オプションで指定される「どのコントローラー」の「どのアクション」を呼び出すか表している。
 
 4.Reservationアプリケーションで、`rails routes`コマンドを実行した時に表示されるルートの中で  
 「POST /rooms(.:format) rooms#create」に該当するルーティングヘルパーを説明してください。
@@ -239,7 +240,7 @@ http://localhost:4000/books?authcode=22&pubcode=5
   Pathヘルパーは rooms_path(:id)  
   URLヘルパーは rooms_url(:id)  
   - 正解
-
+  正解
 5.Reservationアプリケーションで、
 ```bash
   # 1
@@ -255,7 +256,7 @@ http://localhost:4000/books?authcode=22&pubcode=5
   1はパラメーターを持たず、rooms_pathもしくはrooms_urlでヘルパーを使用する。  
   2はパラメーターを持ち、room_path(:id)もしくはroom_url(:id)でヘルパーを使用する。
   - 正解
-
+  正解
 
 ## 8.3 リソースフルルートをより有効に使う方法
 ## 8.4 コントローラーの役割
