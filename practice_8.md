@@ -200,6 +200,7 @@ Prefix欄の単語に`_path`もしくは`_url`をつけることで、それぞ�
 
 #### ルーティングヘルパーにおけるパラメーターの扱い方
 > 引数としてわたす
+
 ```ruby
 book_path(2)
 book_url(2)
@@ -208,17 +209,21 @@ book_url(2)
 #### クエリパラメーターの場合のヘルパーの扱い
 例1:  
 > リクエスト
+
 ```
 http://localhost:4000/introduction/show?user_id=5
 ```
+
 の場合  
 `introduction_path(user_id: 5)`と記述。  
 
 例2:
 > リクエスト
+
 ```
 http://localhost:4000/books?authcode=22&pubcode=5
 ```
+
 の場合  
 `books_path(authcode: 22,pubcode: 5)`と記述。
 
@@ -242,12 +247,14 @@ http://localhost:4000/books?authcode=22&pubcode=5
   - 正解
   正解
 5.Reservationアプリケーションで、
+
 ```bash
   # 1
   rooms GET /rooms(.:format) rooms#index
   # 2
   room GET/rooms/:id(.:format) rooms#show
 ```
+
 という2つのルートのルーティングヘルパーの使い方および違いを、  
 パラメーターの指定の仕方を含めて説明してください。  
 ただし、formatパラメーターについては無視してかまいません。
@@ -259,4 +266,231 @@ http://localhost:4000/books?authcode=22&pubcode=5
   正解
 
 ## 8.3 リソースフルルートをより有効に使う方法
+前提としてリソースフルルートを有効に使い開発を行うことが大切。  
+その上でonlyやexceptオプションを使用することで、リソースフルルートを有効に使うことが可能。  
+#### 同じデータリソースに対し、標準以外の独自アクションルートを設定したい場合
+非リソースフルの単独ルートとして設定することも可能だが、同じリソースのルートとしてリソースフルルートに追加することで、一括管理できるようにするためのオプションがある。  
+#### ルートの種類
+- **リソースidを特定できるルート = メンバールート**  
+  idを特定できる既存のリソース1件に対するルート。  
+  show/edit/update/destroy  
+  > memberオプションを使用してルートを設定する。
+
+- **リソースidを特定できないルート = コレクションルート（集合ルート）**  
+  複数のリソースを対象とするルート。または、idを持っていない新規リソースに対するルート。  
+  new/create/index  
+  > collectionオプションを使用してルートを設定する。
+
+#### 独自ルートの設定方法
+- ブロック（do~end）
+- onオプション  
+どちらを使ってもいいが、onの方がすっきりと記述できる。
+
+#### 具体的な例から設定方法を確認する
+##### 具体例1:Userモデルに検索機能
+> 「検索」は"複数リソース"に対して行う処理であるため**コレクションルート**を使用
+```ruby
+# ブロック
+resources :users do
+  collection do
+    get 'search'
+  end
+end
+# onオプション
+resources :users do
+  get :search, on: :collection
+end
+```
+
+##### 具体例2:Userモデルの特定のユーザーの情報をダウンロードする機能
+> 特定のユーザー（"単一リソース"）の情報であるため**メンバールート**を使用
+```ruby
+# ブロック
+resources :users do
+  member do
+    get 'download'
+  end
+end
+# onオプション
+resources :users do
+  get :download, on: :member
+end
+```
+
+##### 結果
+collectionルートで設定すると:idパラメータはつかないが、memberルートには:idパラメータを持たせることができる。  
+メンバールートは、このURIパターンに従った:idパラメーターの値を指示されると、HTTPメソッドとURIに一致したルートに対応するコントローラーのアクションを呼びだす。
+#### collection
+コレクションルートの設定に使用。  
+コレクションルートとはidが特定できないリソース（複数リソース、新規リソース）を対象としたルート。  
+リソースフルルートでいう、index、new、createがそれに該当。
+#### member
+メンバールートの設定に使用。  
+メンバールートとはidを特定できる単一リソースを対象にしたルート。  
+リソースフルルートでいう、show、edit、update、destroyがそれに該当。
+
+### 8.3.3 親子関係を持つ入れ子ルートについて
+#### 使用するケース
+> 親子関係にあるリソースに対し、親の特定のリソースに紐づいてルーティングを行う仕組みを持たせる。
+  
+親子関係を持つモデルで、このモデルのリソースには親を通じてしかアクセスする必要がない場合。  
+そのような場合は、ルート上でも制約を設けることで、セキュリティ面や管理面で望ましい。  
+また、親リソースと子リソースの関係をルート面で明確にすることで、より理解しやすくもなる。  
+例：Questionに対するChoiceモデル  
+選択肢に対してのみアクセスすることはないため。  
+
+#### 設定法方
+```ruby
+# 例：Userモデルとその子モデルHobby(趣味)モデル
+resources :users do
+  resources :hobbies
+end
+
+# 例：Questionに対するChoiceモデル  
+resources :questions do
+  resources :choices
+end
+```
+
+ユーザーが自分の子リソースであるHobbyモデルにアクセスするためには、`/users/:user_id/hobbies/:id`のように、自分を特定するユーザーIDと、該当する趣味のIDの両方のID値を指定しないとアクセスできなくなる。
+#### しかし！！
+実際は、上記のような場合であっても、Hobbyモデルのidはユニークなので、Hobbyモデルのidがわかれば自ずとアソシエーションで紐づいているUserのidもわかる。  
+子のIDが必須なメンバールートの場合は、子のIDだけのURIでアクセスすることができる。  
+このようなルートの使い方を、**shallowルート（浅いルート）**という。
+
+#### shallowルートの設定方法
+
+- ブロックを使う場合
+
+```ruby
+# 例：Userモデルとその子モデルHobby(趣味)モデル
+shallow do
+  resources :users do
+    resources :hobbies
+  end
+end
+# 例：Questionに対するChoiceモデル  
+shallow do
+  resources :questions do
+    resources :choices
+  end
+end
+```
+
+- ブロック以外の設定方法
+
+```ruby
+# 例：Userモデルとその子モデルHobby(趣味)モデル
+resources :users, shallow: true do
+  resources :hobbies
+end
+---
+resources :users do
+  resources :hobbies, shallow: true
+end
+```
+
+上記のコードはどちらでもルートに対して変わりはなく、同じものとなる。
+
+#### 1階層化されたshallowルートのURIのPrefixの変更
+例：
+```ruby
+resources :users do
+  resources :hobbies, shallow: true, shallow_path: 'people', shallow_prefix: 'person'
+end
+```
+
+### ルートの比較
+- 単純な入れ子
+
+```bash
+                   Prefix Verb   URI Pattern                                  Controller#Action
+             user_hobbies GET    /users/:user_id/hobbies(.:format)            hobbies#index
+                          POST   /users/:user_id/hobbies(.:format)            hobbies#create
+           new_user_hobby GET    /users/:user_id/hobbies/new(.:format)        hobbies#new
+          edit_user_hobby GET    /users/:user_id/hobbies/:id/edit(.:format)   hobbies#edit
+               user_hobby GET    /users/:user_id/hobbies/:id(.:format)        hobbies#show
+                          PATCH  /users/:user_id/hobbies/:id(.:format)        hobbies#update
+                          PUT    /users/:user_id/hobbies/:id(.:format)        hobbies#update
+                          DELETE /users/:user_id/hobbies/:id(.:format)        hobbies#destroy
+                    users GET    /users(.:format)                             users#index
+                          POST   /users(.:format)                             users#create
+                 new_user GET    /users/new(.:format)                         users#new
+                edit_user GET    /users/:id/edit(.:format)                    users#edit
+                     user GET    /users/:id(.:format)                         users#show
+                          PATCH  /users/:id(.:format)                         users#update
+                          PUT    /users/:id(.:format)                         users#update
+                          DELETE /users/:id(.:format)                         users#destroy
+```
+
+- shallowを使用し、1階層化した入れ子
+
+```bash
+                   Prefix Verb   URI Pattern                                  Controller#Action
+             user_hobbies GET    /users/:user_id/hobbies(.:format)            hobbies#index
+                          POST   /users/:user_id/hobbies(.:format)            hobbies#create
+           new_user_hobby GET    /users/:user_id/hobbies/new(.:format)        hobbies#new
+               edit_hobby GET    /hobbies/:id/edit(.:format)                  hobbies#edit
+                    hobby GET    /hobbies/:id(.:format)                       hobbies#show
+                          PATCH  /hobbies/:id(.:format)                       hobbies#update
+                          PUT    /hobbies/:id(.:format)                       hobbies#update
+                          DELETE /hobbies/:id(.:format)                       hobbies#destroy
+                    users GET    /users(.:format)                             users#index
+                          POST   /users(.:format)                             users#create
+                 new_user GET    /users/new(.:format)                         users#new
+                edit_user GET    /users/:id/edit(.:format)                    users#edit
+                     user GET    /users/:id(.:format)                         users#show
+                          PATCH  /users/:id(.:format)                         users#update
+                          PUT    /users/:id(.:format)                         users#update
+                          DELETE /users/:id(.:format)                         users#destroy
+```
+
+- 1階層化したあとprefixとURIを変更
+
+```bash
+                   Prefix Verb   URI Pattern                                  Controller#Action
+             user_hobbies GET    /users/:user_id/hobbies(.:format)            hobbies#index
+                          POST   /users/:user_id/hobbies(.:format)            hobbies#create
+           new_user_hobby GET    /users/:user_id/hobbies/new(.:format)        hobbies#new
+        edit_person_hobby GET    /people/hobbies/:id/edit(.:format)           hobbies#edit
+             person_hobby GET    /people/hobbies/:id(.:format)                hobbies#show
+                          PATCH  /people/hobbies/:id(.:format)                hobbies#update
+                          PUT    /people/hobbies/:id(.:format)                hobbies#update
+                          DELETE /people/hobbies/:id(.:format)                hobbies#destroy
+                    users GET    /users(.:format)                             users#index
+                          POST   /users(.:format)                             users#create
+                 new_user GET    /users/new(.:format)                         users#new
+                edit_user GET    /users/:id/edit(.:format)                    users#edit
+                     user GET    /users/:id(.:format)                         users#show
+                          PATCH  /users/:id(.:format)                         users#update
+                          PUT    /users/:id(.:format)                         users#update
+                          DELETE /users/:id(.:format)                         users#destroy
+```
+
+#### shallow
+親子関係を持つ入れこのルートに対して、直接、子のidだけでアクセスできるようにshallowルート（浅いルート）表現に変更する。
+#### shallow_path
+指定されたパス名を、入れ子のshallowルートのURLの前に付加する。
+#### shallow_prefix
+指定されたプレフィックス名を、入れ子のshallowルーティングヘルパーの接頭辞に付加する。
+
+### リソースフルルートのグループ化
+親子関係のルートに限らず、関係する機能を持ったものであれば、複数のリソースフルルートをグループ化することができる。
+
+#### 何ができるのか？
+共通のグループ名のもとに、関係するルートおよびリソースを管理することができる。
+
+#### 具体的にどうやるのか？
+2種類ある。  
+QuizTemplateApp作成時にもadminとpublicを分けるために、adminにnamespace、publicにscopeを使用していた。  
+違いを見ていく。  
+
+- 名前空間（namespace）  
+ルートを含めた一連のリソースに対してグループ化する場合。  
+
+- スコープ（scope）  
+ルートだけ/リソースだけといったように目的に合わせてグループ化する場合。  
+
+
+
 ## 8.4 コントローラーの役割
