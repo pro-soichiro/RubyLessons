@@ -487,10 +487,144 @@ QuizTemplateApp作成時にもadminとpublicを分けるために、adminにname
 
 - 名前空間（namespace）  
 ルートを含めた一連のリソースに対してグループ化する場合。  
+具体的な変更点は、
+- Prefix  
+- URI  
+- コントローラーのクラス名  
 
-- スコープ（scope）  
+これらに名前空間名を付与したものに変更する。  
+名前空間は、コントローラーのファイルが配置されるディレクトリ名に相当する。  
+従ってコントローラーはcontrollersディレクトリの中に作成する「名前空間名」ディレクトリに移動しなければ、呼び出すことができない。
+
+```ruby
+namespace :admin do
+  resources :users
+end
+```
+
+上記のようにした場合、app/controllersディレクトリにadminディレクトリを作成し、移動させる。  
+また、コントローラークラス名はAdmin::UsersControllerに変える必要がある。  
+
+これらは、Railsのコントローラー自動生成機能やScaffoldを使用すれば、自動で設定が可能。
+定義方法はモデル名の部分を`名前空間名::モデル名`にすればいい。
+
+- スコープメソッド（scope）  
 ルートだけ/リソースだけといったように目的に合わせてグループ化する場合。  
 
+  - 接頭辞（Prefix）のみ変更したい場合  
+  asオプションを使用。  
 
+  ```ruby
+  scope as: :admin do
+    resources :users
+  end
+  ```
+
+  - URIのみ変更したい場合
+
+  ```ruby
+  scope :admin do
+    resources :users
+  end
+  # ブロックなしVer
+  resources :users , path: '/admin/users'
+  ```
+
+  - 振り分けコントローラーのみ変更したい場合  
+  namespace同様のディレクトリ構成にしたい場合などに使用  
+  moduleオプションを使用。  
+
+  ```ruby
+  scope module: :admin do
+    resources :users
+  end
+  ```
+#### namespaceとscopeの違い
+namespaceにadminを使用したルートは、scopeを使用して次のように指定したルートと同じになる。
+
+```ruby
+scope :admin, as: :admin, module: :admin do
+  resources :users
+end
+```
+
+### 8.3.5 ルートの共通化（concern,concerns）
+
+```ruby
+resources :users do
+  collection do
+    get 'search'
+  end
+end
+
+resources :books do
+  collection do
+    get 'search'
+  end
+end
+```
+
+といった共通するsearchアクションルートをまとめて簡潔にするため、concernメソッドで定義し、concernsメソッドで使用できる。  
+
+> concernメソッドで定義
+
+```ruby
+concern :searchable do
+  collection do
+    get 'search'
+  end
+end
+# もしくは
+concern :searchable do
+  get 'search', on: :collection
+end
+```
+
+> concernsメソッドで使用
+
+```ruby
+resources :users, concerns: :searchable
+resources :books, concerns: :searchable
+```
+
+> messageリポジトリ にてコミット済み そちらを参照
+
+他にも、共通ルートを複数指定できたり、名前空間を組み合わせた共通ルートの指定も可能。
+
+### 8.3.6 リソースフルルートを使用したビューのURI宛先指定
+
+form_withヘルパーやlink_toの際に使用する`prefix_path(引数)`に関する話。  
+引数には`@user`などのモデルインスタンスや、`@user.id`などのインスタンスモデルのid値を指定して記述する。  
+
+```ruby
+# モデルインスタンス
+link_to '詳細',user_path(@user)
+# モデルインスタンスのid値
+link_to '詳細',user_path(@user.id)
+# @userは特定のユーザーインスタンスを参照していることを前提として下記のように省略することも可能
+link_to '詳細', @user
+# editの場合
+link_to '編集', edit_user_path(@user)
+```
+
+#### 親子の入れ子構造の場合
+
+```ruby
+resources :users do
+  resources :hobbies
+end
+```
+
+の場合
+
+```ruby
+link_to 'Edit', edit_user_hobby_path(@hobby.user,@hobby)
+```
+
+```
+<&= form_with(model: [@hobby.user,@hobby],local:true) do |form| &>
+```
+
+と記述する。
 
 ## 8.4 コントローラーの役割
