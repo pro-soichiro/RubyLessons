@@ -608,7 +608,7 @@ link_to '編集', edit_user_path(@user)
 ```
 
 #### 親子の入れ子構造の場合
-
+　
 ```ruby
 resources :users do
   resources :hobbies
@@ -628,10 +628,12 @@ link_to 'Edit', edit_user_hobby_path(@hobby.user,@hobby)
 と記述する。
 
 ### 練習問題8.3
+<<<<<<< Updated upstream
 1. コレクションルートとメンバールートの違いを説明してください。
   - 解答  
     コレクションルートはIDが特定できないルートを設定する際、メンバールートはIDが特定できるルートを設定する場合に使用する。
-  - 正解
+  - 正解  
+    正解
 
 2. ルートをグループ化する2種類の設定方法を挙げ、その違いについて説明してください。
   - 解答  
@@ -639,6 +641,8 @@ link_to 'Edit', edit_user_hobby_path(@hobby.user,@hobby)
     namespaceはPrefixとURIとアクション名を一括してグループ化するときに使用  
     scopeはnamespaceでグループ化できる内容を別々に設定できる
   - 正解  
+    正解であるが、補足  
+    ルートを含めた一連のリソースを名前空間を使ってグループ化する方法と、ルートだけ・リソースだけといったように目的に合わせてスコープを使ってグループ化する方法がある。
 
 3. 入れ子ルートの特徴とその使い方について説明してください。
   - 解答  
@@ -649,7 +653,10 @@ link_to 'Edit', edit_user_hobby_path(@hobby.user,@hobby)
       resources :子モデル
     end
     ```
-  - 正解
+  - 正解  
+    親子関係を持つモデルのルートを双方のidを指定して特定することができる。  
+    また、子モデルにアクセスするには親モデルを通してしかアクセスする必要がない場合などは、ルート上でもそのような制約を設けることができる。
+    使い方は、親のリソースルートのブロックの中に子のリソースルートを設定する。  
 
 4. shallowルートとはどのような目的で使用するのか、具体的に説明してください。
   - 解答  
@@ -659,7 +666,10 @@ link_to 'Edit', edit_user_hobby_path(@hobby.user,@hobby)
       resources :子モデル,shallow: true
     end
     ```
-  - 正解
+  - 正解  
+    正解
+=======
+>>>>>>> Stashed changes
 
 
 ## 8.4 コントローラーの役割
