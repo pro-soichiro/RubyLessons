@@ -194,4 +194,63 @@ Webアプリケーションはステートレスである。
     セッション情報は、デフォルトではクッキー（クライアントのWebブラウザーと簡単な情報をやり取りするためのファイル）に保持される。
 
 ## 9.2 目的に合わせた出力フォーマットの制御
+### 学習前 練習問題9.2
+1. respond_toメソッドの役割について説明してください。
+  わからない。
+2. HTML形式以外のフォーマットでHTTPレスポンスを出力するにはどうすればいいか？
+  `render html: @インスタンス変数`
+
+### Ajaxを使う際のフォーマット指定
+`render json: @user`
+
+### respond_toメソッドの役割
+データフォーマットを判断し、ブロック内で指定された形式に合わせて処理を実行してくれる。
+
+- html
+- xml
+- json
+- rss
+- atom
+- yaml
+- js
+- css
+- csv
+- ics
+- 画像などのその他の拡張子
+
+> これらを指定してrenderするとURIの語尾に`.json`などのようにフォーマット名が明記される。
+
+```ruby
+def show
+  @user = User.find(params[:id])
+  respond_to do |format|
+    format.html
+    format.xml { render xml: @user }
+    format.json { render json: @user }
+  end
+end
+```
+
+> 設定されていないフォーマットのURLをrespond_toメソッドで受け取るとUnknownFormat例外が発生する
+
+### 学習後 練習問題9.2
+1. respond_toメソッドの役割について説明してください。
+  - 解答
+    指定されたフォーマットで処理を振り分ける。
+  - 正解
+
+2. HTML形式以外のフォーマットでHTTPレスポンスを出力するにはどうすればいいか？
+  - 解答
+    ```ruby
+    respond_to do |format|
+      format.json { render json: @インスタンス名 }
+    end
+    ```
+  - 正解
+  
+
+
+
+
+
 ## 9.3 フィルター
