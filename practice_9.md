@@ -319,17 +319,47 @@ skip_before_action :authentication_check
     フィルターはアクションにおいて実行前後にあらかじめ設定した処理を実行できる機能。  
     モデルのコールバックは、リソースの操作の前後だが、フィルターはアクションの前後であるため、リソースの操作にいとわない。
 
-  - 正解
+  - 正解  
+    正解。
+    フィルターとは、すべてのアクションに対して、前処理・後処理を設定する役割を提供するもの。  
+    コールバックは、モデルを通してデータベースへ登録するデータの処理の前後に実行するものだが、フィルターは、そのモデルの処理を含むアクションの前後に呼び出す処理。  
   
 2. ReservationアプリケーションのRoomsコントローラーのshow/editアクションが、何も記述されていないのに正しく処理される仕組みについて説明してください。
   - 解答  
     before_actionメソッドによってshowおよびeditアクションの実行前にidを取得するfindメソッドをprivateメソッド内で定義しているため。
 
-  - 正解
+  - 正解  
+    正解。
   
 3. Basic認証とダイジェスト認証の違いおよび実装方法について説明してください。
   - 解答  
     Basicは暗号化されず、ダイジェスト認証は暗号化される。
-    
-  - 正解
-  
+
+  - 正解  
+    違いについては正解。  
+    実装方法についての説明がない。  
+    両方ともApplicationControllerに記述する。  
+
+    BASIC認証は、http_basic_authenticate_withメソッドを使用し、下記のように記述する。  
+
+    ```ruby
+    # ApplicationController
+    http_basic_authenticate_with name:"guest",password: "password"
+    ```
+
+    ダイジェスト認証は、ユーザー名とパスワードをMD5方式のハッシュ形式で暗号化して送信する方式  
+    authenticate_or_request_with_http_digestメソッドを利用する。  
+
+    ```ruby
+    # ApplicationController
+    USERS = {"guest" => "password"}
+    before_action :authenticate
+
+
+    private
+      def authenticate
+        authenticate_or_request_with_http_digest do |username|
+          USERS[username]
+        end
+      end
+    ```
