@@ -250,8 +250,83 @@ end
   - 正解
     正解
 
-
-
-
-
 ## 9.3 フィルター
+
+### 主なフィルターメソッド
+- before_action
+- after_action
+- around_action
+
+```ruby
+around_action :ard_search, only: [:search]
+
+def search
+  # searchアクションの処理
+end
+
+private
+
+def ard_search
+  # searchアクション実行前の処理
+  yield
+  # searchアクション実行後の処理
+end
+
+```
+
+### フィルターのスキップ機能
+- skip_before_action
+  - before_actionで使いしたフィルターをスキップする
+- skip_after_action
+  - after_actionで追加したフィルターをスキップする
+- skip_around_action
+  - around_actionで追加したフィルターをスキップする
+
+### スキップの具体的な使用例
+ApplicationControllerにてログイン中であるかのチェック処理であるauthentication_checkを実装。
+
+```ruby
+# ApplicationControllerにて
+before_action :authentication_check
+
+private
+
+def authentication_check
+  # ログインされているかのチェック処理
+end
+```
+
+```ruby
+# UsersController
+.....(省略).....
+
+# BooksController
+.....(省略).....
+```
+それぞれのコントローラーで継承されるauthentication_check
+
+Loginコントローラーのみこれらをスキップしたいとき
+
+```ruby
+# LoginController
+skip_before_action :authentication_check
+
+```
+
+### 練習問題 9.3
+1. フィルターの役割を説明してください。また、モデルのコールバック処理との違いを説明してください。
+  - 解答
+
+  - 正解
+  
+2. ReservationアプリケーションのRoomsコントローラーのshow/editアクションが、何も記述されていないのに正しく処理される仕組みについて説明してください。
+  - 解答
+
+  - 正解
+  
+3. Basic認証とダイジェスト認証の違いおよび実装方法について説明してください。
+
+  - 解答
+
+  - 正解
+  
