@@ -125,3 +125,145 @@ A. わからない。
 A. わからない。
 3. fields_forヘルパーメソッドの使い方について説明してください。また、その時のストロングパラメーターとの関係についても説明してください。  
 A. わからない。
+
+#### Q. 画像を表示するためのヘルパーメソッドは？
+A. image_tag '画像ファイルのパス'[,オプション or HTMLオプション]
+#### Q. 画像ファイルのパス指定方法をあげよ。
+A. 相対パスで指定する方法とルートからの絶対パスで指定する方法がある。  
+相対パスの場合`<%= image_tag 'logo.jpg' %>`のように記述し、app/assets/imagesディレクトリ内にあるものとして参照される。  
+絶対パスの場合`<%= image_tag '/logo.jpg' %>`のように`/`から記述し、これはpublicディレクトリの下にあるものとして参照される。
+#### Q. 画像のサイズを指定する方法を2つあげよ。
+A. widthオプションとheightオプションを使用する方法と、sizeオプションを使用する方法  
+widthとheightの場合`width: 300, height: 200`、sizeの場合`size:"300x200"`  
+> 画像に対するサイズを指定する場合、縦横を両方指定すると、本来の画像の縦横比が無視されてしまう。  
+> そのため、画像サイズの補正をしない限り、通常は、縦/横どちらかのサイズを指定する。  
+> しかし実際は`class:'logo_image'`などのようにクラスオプションを使用し、スタイルシートで指定する方がいい。
+
+#### Q. form_withヘルパーメソッドは、どのような時に使うか？
+A. クライアントパソコンのブラウザーに、データリソースの入力や編集を行うフォームを生成したい時。
+
+#### Q. form_withヘルパーの第一引数に指定するものとして2種類をあげよ。
+A. modelとscope
+
+#### Q. 上記における、modelとscopeの違いを説明してください。
+A. モデルに紐づいた入力か否か
+- **model**  
+特定のモデルリソースを対象にした場合  
+モデルに基づく新規登録や編集  
+- **scope**  
+特定のリソース（モデルなど）と結びつかない入力フォームを生成する場合  
+例えば、検索機能など  
+
+#### Q. form_withヘルパーメソッドにおけるlocal: trueとはどういう意味か？
+A. 画像のページ単位で同期してサーバーからHTTPレスポンスを受信するオプション。  
+未記述もしくはfalseでAjaxとして扱われる。
+
+#### Q. form_withヘルパーメソッドを使用した場合、入力項目の値は、コントローラーのアクションにおいてどのように受け取ることができるか？modelがproduct、name属性を取得する場合で考えなさい。
+A. params[:product][:name]
+
+#### Q. modelオプションを使用した場合、宛先のURIを指定しなくてもnewアクションによって生成された新規の画面のデータはcreateアクションにルーティングされ、editアクションによって生成された編集の画面のデータはupdateアクションにルーティングされるのはなぜか？
+A. RailsにおけるCoC(設定より規約)の思想に則っており、内部的に指定されるモデルのインスタンスを見て、そのインスタンスがidを持たない新規のインスタンスか、idを持つ既存のインスタンスかに応じて、次の宛先となるURIを自動で推測・生成してくれるから。
+> もし、手動で指定したい場合はURLオプションを使用する。
+
+#### Q. フォーム要素ヘルパーメソッドに使えるインスタンスメソッドを確認するには？
+A. ActionView::Helpers::FormBuilder.instance_methods
+
+#### Q. 親子関係にあるリソースフルルートを、入れ子状態のルートで設定できるが、form_withメソッドを使う際の記述方法は？下記ルートの場合を考える。
+
+```ruby
+resources :users do
+  resources :hobbies
+end
+```
+
+A.上記のようなルートの場合で、hobbyを登録したいときは、それに紐付けたいuserの情報も必要なので、下記のように記述する。
+
+```ruby
+<%= form_with(model: [hobby.user, hobby ],local: true) do |form| %>
+  # 省略
+<% end %>
+```
+
+#### Q. フォーム要素のヘルパーメソッドにおいて
+
+##### Q. 単一行のテキストボックスを生成するメソッドは？
+A. text_field  例：`<%= form.text_field :name %>`
+
+##### Q. 複数行のテキストボックスを生成するメソッドは？
+A. text_area  例：`<%= form.text_area :message %>`
+
+##### Q. 隠しフィールドを生成するには？
+A. hidden_field  例：:`<%= form.hidden_field :secret %>`
+
+##### Q. パスワードフィールドを生成するには？
+A. password_field  例：`<%= form.password_field :password %>`  
+> 入力内容は「*」に置き換えられる。
+
+##### Q. チェックボックスを生成するには？
+A. check_box  例：`<%= form.check_box :married %>`
+
+##### Q. モデルのリソースに基づいて、チェックボックスを、リソースの数だけ自動的に生成するには？Langモデルのname属性をチェックボックスの値とし、Langのidをlocaleに取り込む場合。
+A. collection_check_boxes  例：`<%= form.collection_check_boxes(:locale, Lang.all, :id, :name) %>`  
+<%= form.collection_check_boxes(:取り込む変数名, データリソース（モデル.all など）, :id, :属性値) %>
+
+##### Q. 入力フィールドの項目名を表示するラベルを生成するには？name属性の項目名の場合。
+A. label  例：`<%= form.label :name %>`
+
+##### Q. 指定した値に基づいて、ラジオボタンを生成したい場合に使用するメソッドは？
+A. radio_button  
+例：
+
+```ruby
+<% genders = %w(男 女 その他) %>
+<% genders.each_with_index do |g,i| %>
+  <%= form.label :gender, g, value: i %>
+  <%= form.radio_button :gender,i %>
+<% end %>
+```
+
+<% genders.each_with_index do |g,i| %>
+  <%= form.label :属性値, 値, value: インデックス番号 %>
+  <%= form.radio_button :属性値, インデックス番号 %>
+<% end %>
+
+##### Q. モデルのリソースに基づいて、ラジオボタンを、リソースの数だけ自動的に生成する方法は？
+A. collection_radio_buttons  
+例：Hobbyモデルのname属性の場合。  
+
+```
+<%= form.collection_radio_buttons(:hobby, Hobby.all, :id, :name) %>
+```
+
+##### Q. 入力情報をリセットするためのボタンを生成する場合には？
+A. button  例：`<%= form.button "リセット", type: :reset %>`
+
+##### Q. ある範囲の数値を入力するためのスライダーを生成したい場合は？最小値は0で、最大値は10、メモリ（刻み）は1とする場合。like_rangeという名前で結果はresultで受け取る。
+A. range_field  例：`<%= form.range_field :like_range, min: 0, max: 10, step: 1, id: :result %>`
+
+##### Q.
+A. date_field
+
+##### Q.
+A. date_select/datetime_select
+
+##### Q.
+A. telephone_field
+
+##### Q.
+A. email_field
+
+##### Q.
+A. url_field
+
+##### Q.
+A. select
+
+##### Q.
+A. submit
+
+##### Q.
+A. search_field
+
+##### Q.
+A. number_field
+
