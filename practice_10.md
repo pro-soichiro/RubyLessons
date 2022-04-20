@@ -240,19 +240,22 @@ A. button  例：`<%= form.button "リセット", type: :reset %>`
 ##### Q. ある範囲の数値を入力するためのスライダーを生成したい場合は？最小値は0で、最大値は10、メモリ（刻み）は1とする場合。like_rangeという名前で結果はresultで受け取る。
 A. range_field  例：`<%= form.range_field :like_range, min: 0, max: 10, step: 1, id: :result %>`
 
-##### Q.
-A. date_field
+##### Q.日付を入力させるためのカレンダーダイアログを生成したい場合に使用するメソッドは？
+A. date_field  例:`<%= form.date_field :memorial_date %>`
 
-##### Q.
-A. date_select/datetime_select
+##### Q.年月日の選択フィールドと年月日と時秒分の選択フィールドを生成するメソッドは？
+A. date_select/datetime_select  
+年月日の例:`<%= form.date_select :birth_day %>`  
+年月日と時分秒の例:`<%= form.datetime_select :login_datetime %>`  
+> デフォルトは前後5年。オプションで`start_year: 1990`と`end_year: 2000`が指定できる。
 
-##### Q.
+##### Q.電話番号の入力フォームヘルパーメソッドは？
 A. telephone_field
 
-##### Q.
+##### Q.emailの入力フォームヘルパーメソッドは？
 A. email_field
 
-##### Q.
+##### Q.URLの入力フォームヘルパーメソッドは？
 A. url_field
 
 ##### Q.
