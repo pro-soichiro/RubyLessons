@@ -266,4 +266,3 @@ A. search_field
 
 ##### Q.
 A. number_field
-
