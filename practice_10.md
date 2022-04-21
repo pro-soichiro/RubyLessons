@@ -258,14 +258,81 @@ A. email_field
 ##### Q.URLの入力フォームヘルパーメソッドは？
 A. url_field
 
-##### Q.
+##### Q.項目選択のセレクトボックスを生成するメソッドは？
 A. select
 
-##### Q.
+##### Q.フォームの送信ボタンを生成するメソッドは？
 A. submit
 
-##### Q.
+##### Q.検索入力用テキストボックスを生成するメソッドは？
 A. search_field
 
-##### Q.
+##### Q. 整数値を入力するためのテキストボックスを生成するメソッドは？
 A. number_field
+
+#### Q. 名前空間adminで入れ子に設定されているquestionコントローラーに対して、form_withメソッドで新規作成および、編集フォームを作成する方法は？
+
+> 下記、ルートの記述
+
+```ruby
+namespace "admin" do
+  resources :questions
+end
+```
+
+A. `<%= form_with(model: [:admin, question], local: true ) do |form| %>`  
+form_with(model: [:名前空間名, モデルオブジェクト], local: true ) do |form|
+
+#### Q. 「注文モデルに紐づく注文詳細モデル」の例で、一つのモデルが他のモデルと1対多のアソシエーションの関係にある場合、親モデルの入力フォームの中に、子モデルの属性項目を親モデルの一つの属性グループのように扱い、入れ子上にして組み込んだビューを作成する方法を説明してください。
+ヒント：コントローラーとモデル、ビュー全てにおいて設定が必要ですが、追記する項目のみで大丈夫です。  
+注文モデルをorder、注文詳細モデルをorder_detailとしてください。  
+また、ビューに関しては、パーシャルテンプレートを使用し、_form.html.erbの内容のみ記述してください。  
+コントローラーに関してはnewアクションとeditアクションの追記部分のみ解答してください。  
+editに必要なidの取得はされているものとします。  
+また、注文詳細モデルは1つのみとします。編集時には新たに注文詳細モデルが追加できるようにしてください。  
+注文モデルの属性はname,order_date  
+注文詳細モデルの属性はid,item_name,countとします。  
+
+A. モデル  
+
+```ruby
+# orderモデル
+accepts_nested_attributes_for :order_details
+```
+
+```ruby
+# orderコントローラー
+def new
+  @order = Order.new
+  @order.order_details.new
+end
+
+def edit
+  @order.order_details.new
+end
+
+
+private
+  def order_params
+    params.require(:order).permit(:name,
+                                  :order_date,
+                                  order_details_attributes: [:id,
+                                                             :item_name,
+                                                             :count]
+                                  )
+  end
+```
+
+#### Q. ビューテンプレートで使用するヘルパーメソッドを独自で作成する方法を2つ挙げなさい。
+A. app/helpersディレクトリ下のヘルパーモジュールファイルを使用する方法と、コントローラー内helper_methodメソッドを使用する方法。
+
+### 練習問題 10.4
+1. image_tagを使用して画像を表示する場合、相対パスと絶対パスで指定する場合の画像の保存場所の違いを説明してください。
+- **解答**
+- **正解**
+1. form_withヘルパーメソッドの役割およびmodelオプションとscopeオプションの使い方の違いを具体的に説明してください。
+- **解答**
+- **正解**
+1. field_forヘルパーメソッドの使い方について説明してください。また、その時のストロングパラメーターとの関係についても説明してください。
+- **解答**
+- **正解**
